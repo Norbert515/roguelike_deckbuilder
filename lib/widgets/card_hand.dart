@@ -6,7 +6,7 @@ import 'package:roguelike_deckbuilder/widgets/game_card_widget.dart';
 
 class CardHand extends StatefulWidget {
   final List<GameCard> cards;
-  final Function(GameCard)? onCardSelected;
+  final Function(int index, GameCard card)? onCardSelected;
   final double cardWidth;
   final double cardHeight;
   final double overlapFactor;
@@ -82,7 +82,7 @@ class _CardHandState extends State<CardHand> {
                         }
                       });
                       if (widget.onCardSelected != null) {
-                        widget.onCardSelected!(card);
+                        widget.onCardSelected!(index, card);
                       }
                     },
                   ),

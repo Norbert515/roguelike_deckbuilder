@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:roguelike_deckbuilder/screens/main_game_screen.dart';
 import 'models/card.dart';
 
 void main() {
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
         useMaterial3: true,
       ),
-      home: const GameScreen(),
+      home: const MainGameScreen(),
     );
   }
 }
