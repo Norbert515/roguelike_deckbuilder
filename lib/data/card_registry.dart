@@ -115,6 +115,32 @@ class CardRegistry {
     assetPath: _placeholderAsset, // Placeholder
   );
 
+  static const GameCard unreadPrivacyPolicy = GameCard(
+    name: 'Unread Privacy Policy',
+    type: CardType.feature,
+    timeTaken: 1,
+    onPlay: '',
+    onResolve: 'Gain 100 users',
+    flavorText: 'Lawyers approved. We didn\'t read it.',
+    assetPath: 'assets/cards/Unread_Privacy_Policy.png',
+  );
+
+  // --- List of All Cards ---
+  static final List<GameCard> allCards = List.unmodifiable([
+    addAButton,
+    pullToRefresh,
+    darkMode,
+    tweetstorm,
+    pushNotification,
+    productHuntPost,
+    crashOnLaunch,
+    buggyCommit,
+    codeCleanup,
+    coffeeRefactor,
+    microtransaction,
+    unreadPrivacyPolicy,
+  ]);
+
   // --- Starter Deck Definition ---
 
   // Based on game.md, the starter deck contains one of each listed card.
@@ -130,6 +156,7 @@ class CardRegistry {
     codeCleanup,
     coffeeRefactor,
     microtransaction,
+    unreadPrivacyPolicy,
   ]);
 
   // TODO: Add definitions for all other cards mentioned in game.md

@@ -85,6 +85,20 @@
     2. A "Settings" door with random features trying to escape
     3. A settings gear trying to contain an explosion of toggles and buttons
 
+- **Unread Privacy Policy** (Feature, 1h)
+  - OnPlay: —
+  - OnResolve: Gain 100 users
+  - Flavor Options:
+    1. "Lawyers approved. We didn't read it."
+    2. "Users scrolled past this faster than your loading animation."
+    3. "The longest document ever ignored."
+  - Illustration Options:
+    1. A long scroll of dense legal text with cobwebs on the "Accept" button.
+    2. A user blindly clicking "Accept" while sleeping.
+    3. The privacy policy document being used as a doorstop.
+    4. A magnifying glass showing incomprehensible legalese within the policy.
+    5. A tumbleweed rolling past the privacy policy link on a signup page.
+
 - **Cloud Sync** (Feature, 2h)
   - OnPlay: —
   - OnResolve: —

@@ -3,6 +3,7 @@ import 'package:roguelike_deckbuilder/controllers/game_controller.dart';
 import 'package:roguelike_deckbuilder/models/card.dart';
 import 'package:roguelike_deckbuilder/models/game_state.dart';
 import 'package:roguelike_deckbuilder/widgets/card_hand.dart';
+import 'package:roguelike_deckbuilder/widgets/game_card_widget.dart';
 
 class MainGameScreen extends StatefulWidget {
   const MainGameScreen({super.key});
@@ -150,12 +151,35 @@ class _MainGameScreenState extends State<MainGameScreen> {
 
               // Sprint Backlog (Played Cards this turn)
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: Text(
-                  'Sprint Backlog: ${gameState.sprintBacklog.isEmpty ? "Empty" : gameState.sprintBacklog.map((c) => c.name).join(', ')}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  textAlign: TextAlign.center,
-                ),
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text('Sprint Backlog', style: Theme.of(context).textTheme.titleMedium),
+              ),
+              Container(
+                constraints: const BoxConstraints(maxHeight: 120), // Limit height
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child:
+                    gameState.sprintBacklog.isEmpty
+                        ? Center(
+                          child: Text(
+                            'Empty',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                          ),
+                        )
+                        : Wrap(
+                          spacing: 8.0, // Horizontal space between cards
+                          runSpacing: 4.0, // Vertical space if wraps
+                          alignment: WrapAlignment.center,
+                          children:
+                              gameState.sprintBacklog.map((card) {
+                                return GameCardWidget(
+                                  card: card,
+                                  width: 80, // Smaller width for backlog
+                                  height: 112, // Smaller height for backlog
+                                  isSelected: false, // Not selectable in backlog
+                                  // No onTap needed for backlog view
+                                );
+                              }).toList(),
+                        ),
               ),
               const Divider(),
 
