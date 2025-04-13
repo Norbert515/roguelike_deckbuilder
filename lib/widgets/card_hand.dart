@@ -26,6 +26,7 @@ class CardHand extends StatefulWidget {
 
 class _CardHandState extends State<CardHand> {
   int? selectedIndex;
+  int? hoveredIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -64,27 +65,39 @@ class _CardHandState extends State<CardHand> {
                 left: horizontalOffset,
                 // Adjust top position based on the curve
                 top: verticalOffset,
-                child: Transform.rotate(
-                  angle: angleRadians,
-                  // Rotate around the bottom center of the card
-                  alignment: Alignment.bottomCenter,
-                  child: GameCardWidget(
-                    card: card,
-                    width: widget.cardWidth,
-                    height: widget.cardHeight,
-                    isSelected: selectedIndex == index,
-                    onTap: () {
-                      setState(() {
-                        if (selectedIndex == index) {
-                          selectedIndex = null;
-                        } else {
-                          selectedIndex = index;
+                child: MouseRegion(
+                  onEnter: (_) {
+                    setState(() {
+                      hoveredIndex = index;
+                    });
+                  },
+                  onExit: (_) {
+                    setState(() {
+                      hoveredIndex = null;
+                    });
+                  },
+                  child: Transform.rotate(
+                    angle: angleRadians,
+                    // Rotate around the bottom center of the card
+                    alignment: Alignment.bottomCenter,
+                    child: GameCardWidget(
+                      card: card,
+                      width: widget.cardWidth,
+                      height: widget.cardHeight,
+                      isSelected: selectedIndex == index || hoveredIndex == index,
+                      onTap: () {
+                        setState(() {
+                          if (selectedIndex == index) {
+                            selectedIndex = null;
+                          } else {
+                            selectedIndex = index;
+                          }
+                        });
+                        if (widget.onCardSelected != null) {
+                          widget.onCardSelected!(index, card);
                         }
-                      });
-                      if (widget.onCardSelected != null) {
-                        widget.onCardSelected!(index, card);
-                      }
-                    },
+                      },
+                    ),
                   ),
                 ),
               );
