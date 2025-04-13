@@ -1,164 +1,51 @@
-import 'package:roguelike_deckbuilder/models/card.dart';
+import 'package:roguelike_deckbuilder/models/base_card.dart';
 
 class CardRegistry {
   // --- Version 0.1 Starter Cards ---
-  // Note: Using placeholder for missing assets
-  static const String _placeholderAsset = 'assets/cards/placeholder.png';
+  // Card definitions are now separate classes extending BaseCard,
+  // consolidated in lib/models/all_cards.dart (part of base_card.dart library)
 
-  static const GameCard addAButton = GameCard(
-    name: 'Add a Button',
-    type: CardType.feature,
-    timeTaken: 1,
-    onPlay: '',
-    onResolve: '',
-    flavorText: 'It doesn\'t do much, but it *does* glow.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
+  // Note: Original GameCard constants are removed.
+  // The _placeholderAsset is now handled within each card class as needed.
 
-  static const GameCard pullToRefresh = GameCard(
-    name: 'Pull to Refresh',
-    type: CardType.feature,
-    timeTaken: 1,
-    onPlay: '',
-    onResolve: '',
-    flavorText: 'Because scrolling down is for peasants.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard darkMode = GameCard(
-    name: 'Dark Mode',
-    type: CardType.feature,
-    timeTaken: 2,
-    onPlay: '',
-    onResolve: '',
-    flavorText: 'Now your app is 38% more modern.',
-    assetPath: 'assets/cards/Dark_Mode.png', // Available
-  );
-
-  static const GameCard tweetstorm = GameCard(
-    name: 'Tweetstorm',
-    type: CardType.marketing,
-    timeTaken: 2,
-    onPlay: '',
-    onResolve: 'Gain 2,000 users for each Feature to the left',
-    flavorText: 'Just 14 tweets deep and you\'re trending.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard pushNotification = GameCard(
-    name: 'Push Notification',
-    type: CardType.marketing,
-    timeTaken: 2,
-    onPlay: 'Draw 1 card',
-    onResolve: '+10% bonus user gain',
-    flavorText: 'Ping! You again.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard productHuntPost = GameCard(
-    name: 'Product Hunt Post',
-    type: CardType.marketing,
-    timeTaken: 3,
-    onPlay: '',
-    onResolve: '+50% user gain for every Feature in your build',
-    flavorText: 'Launched at midnight. Voted by mom.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard crashOnLaunch = GameCard(
-    name: 'Crash on Launch',
-    type: CardType.bug,
-    timeTaken: 1,
-    onPlay: '', // Bugs usually don't have voluntary OnPlay
-    onResolve: '−2,500 users', // This happens if unplayed
-    flavorText: 'At least the splash screen looked nice.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard buggyCommit = GameCard(
-    name: 'Buggy Commit',
-    type: CardType.bug,
-    timeTaken: 1,
-    onPlay: '',
-    onResolve: '−10% total user gain', // If unplayed
-    flavorText: 'Works on my machine.',
-    assetPath: 'assets/cards/Buggy_Commit.png', // Available
-  );
-
-  static const GameCard codeCleanup = GameCard(
-    name: 'Code Cleanup',
-    type: CardType.utility,
-    timeTaken: 2,
-    onPlay: 'Remove 1 Bug from your hand, draw 1 card',
-    onResolve: '',
-    flavorText: 'Finally deleted that one TODO from 2022.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard coffeeRefactor = GameCard(
-    name: 'Coffee Refactor',
-    type: CardType.utility,
-    timeTaken: 2,
-    onPlay: 'Draw 2, discard 1',
-    onResolve: '',
-    flavorText: 'Clean code? No, *caffeinated* code.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard microtransaction = GameCard(
-    name: 'Microtransaction',
-    type: CardType.utility,
-    timeTaken: 1,
-    onPlay: 'Gain +2 Hours',
-    onResolve: '',
-    flavorText: 'Only costs your soul. And \$0.99.',
-    assetPath: _placeholderAsset, // Placeholder
-  );
-
-  static const GameCard unreadPrivacyPolicy = GameCard(
-    name: 'Unread Privacy Policy',
-    type: CardType.feature,
-    timeTaken: 1,
-    onPlay: '',
-    onResolve: 'Gain 100 users',
-    flavorText: 'Lawyers approved. We didn\'t read it.',
-    assetPath: 'assets/cards/Unread_Privacy_Policy.png',
-  );
-
-  // --- List of All Cards ---
-  static final List<GameCard> allCards = List.unmodifiable([
-    addAButton,
-    pullToRefresh,
-    darkMode,
-    tweetstorm,
-    pushNotification,
-    productHuntPost,
-    crashOnLaunch,
-    buggyCommit,
-    codeCleanup,
-    coffeeRefactor,
-    microtransaction,
-    unreadPrivacyPolicy,
+  // --- List of All Card Definitions ---
+  // This list holds instances of the *card type* classes.
+  // These are blueprints, not specific instances in play.
+  static final List<BaseCard> allCardTypes = List.unmodifiable([
+    AddAButtonCard(),
+    PullToRefreshCard(),
+    DarkModeCard(),
+    TweetstormCard(),
+    PushNotificationCard(),
+    ProductHuntPostCard(),
+    CrashOnLaunchCard(),
+    BuggyCommitCard(),
+    CodeCleanupCard(),
+    CoffeeRefactorCard(),
+    MicrotransactionCard(),
+    UnreadPrivacyPolicyCard(),
   ]);
 
   // --- Starter Deck Definition ---
-
-  // Based on game.md, the starter deck contains one of each listed card.
-  static final List<GameCard> starterDeck = List.unmodifiable([
-    addAButton,
-    pullToRefresh,
-    darkMode,
-    tweetstorm,
-    pushNotification,
-    productHuntPost,
-    crashOnLaunch,
-    buggyCommit,
-    codeCleanup,
-    coffeeRefactor,
-    microtransaction,
-    unreadPrivacyPolicy,
+  // Based on game.md, the starter deck contains one instance of each defined card type.
+  // When the game starts, these BaseCard definitions will be used to create
+  // CardInPlay instances for the actual deck.
+  static final List<BaseCard> starterDeckDefinition = List.unmodifiable([
+    AddAButtonCard(),
+    PullToRefreshCard(),
+    DarkModeCard(),
+    TweetstormCard(),
+    PushNotificationCard(),
+    ProductHuntPostCard(),
+    CrashOnLaunchCard(),
+    BuggyCommitCard(),
+    CodeCleanupCard(),
+    CoffeeRefactorCard(),
+    MicrotransactionCard(),
+    UnreadPrivacyPolicyCard(),
   ]);
 
   // TODO: Add definitions for all other cards mentioned in game.md
-  // TODO: Create or obtain placeholder.png asset
+  //       by creating new classes extending BaseCard in all_cards.dart
+  // TODO: Ensure placeholder.png asset exists or update paths in card classes.
 }

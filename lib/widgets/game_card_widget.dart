@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:roguelike_deckbuilder/models/card.dart';
+import 'package:roguelike_deckbuilder/models/card_in_play.dart';
 
 class GameCardWidget extends StatelessWidget {
-  final GameCard card;
+  final CardInPlay cardInPlay;
   final bool isSelected;
   final VoidCallback? onTap;
   final double width;
@@ -10,7 +10,7 @@ class GameCardWidget extends StatelessWidget {
 
   const GameCardWidget({
     Key? key,
-    required this.card,
+    required this.cardInPlay,
     this.isSelected = false,
     this.onTap,
     this.width = 200,
@@ -19,6 +19,8 @@ class GameCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cardDefinition = cardInPlay.cardType;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -35,7 +37,7 @@ class GameCardWidget extends StatelessWidget {
           color: Colors.transparent,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.asset(card.assetPath, fit: BoxFit.cover),
+            child: Image.asset(cardDefinition.assetPath, fit: BoxFit.cover),
           ),
         ),
       ),

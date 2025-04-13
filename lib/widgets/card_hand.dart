@@ -1,12 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:roguelike_deckbuilder/models/card.dart';
+import 'package:roguelike_deckbuilder/models/card_in_play.dart';
 import 'package:roguelike_deckbuilder/widgets/game_card_widget.dart';
 
 class CardHand extends StatefulWidget {
-  final List<GameCard> cards;
-  final Function(int index, GameCard card)? onCardSelected;
+  final List<CardInPlay> cards;
+  final Function(int index, CardInPlay card)? onCardSelected;
   final double cardWidth;
   final double cardHeight;
   final double overlapFactor;
@@ -44,7 +44,7 @@ class _CardHandState extends State<CardHand> {
           child: Stack(
             clipBehavior: Clip.none,
             children: List.generate(widget.cards.length, (index) {
-              final card = widget.cards[index];
+              final cardInPlay = widget.cards[index];
               final horizontalOffset = index * (widget.cardWidth * widget.overlapFactor);
 
               // Calculate transformation values for the curve
@@ -81,7 +81,7 @@ class _CardHandState extends State<CardHand> {
                     // Rotate around the bottom center of the card
                     alignment: Alignment.bottomCenter,
                     child: GameCardWidget(
-                      card: card,
+                      cardInPlay: cardInPlay,
                       width: widget.cardWidth,
                       height: widget.cardHeight,
                       isSelected: selectedIndex == index || hoveredIndex == index,
@@ -94,7 +94,7 @@ class _CardHandState extends State<CardHand> {
                           }
                         });
                         if (widget.onCardSelected != null) {
-                          widget.onCardSelected!(index, card);
+                          widget.onCardSelected!(index, cardInPlay);
                         }
                       },
                     ),

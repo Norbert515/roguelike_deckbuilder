@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:roguelike_deckbuilder/data/card_registry.dart';
+import 'package:roguelike_deckbuilder/models/base_card.dart'; // Import BaseCard for CardType and definitions
+import 'package:roguelike_deckbuilder/models/card_in_play.dart'; // Import CardInPlay
 
-import '../models/card.dart';
+// Removed old import: import '../models/card.dart';
 import '../models/game_state.dart';
 
 // No longer need the placeholder deck here
@@ -16,11 +18,14 @@ class GameController extends ValueNotifier<GameState> {
   }
 
   void _initializeGame() {
-    // Use the starter deck from the registry
-    final initialDeck = List<GameCard>.from(CardRegistry.starterDeck);
-    _shuffleDeck(initialDeck);
+    // Use the starter deck definition from the registry and map to CardInPlay
+    final initialDeck =
+        CardRegistry.starterDeckDefinition
+            .map((cardDef) => CardInPlay(cardDef)) // Create CardInPlay instances
+            .toList();
+    _shuffleDeck(initialDeck); // Shuffle the CardInPlay list
 
-    // Update the GameState.initial factory later if needed for cleaner setup
+    // Initialize state with the prepared deck
     GameState initialState = GameState.initial().copyWith(deck: initialDeck);
     // Draw initial hand using the refactored method
     initialState = _drawUntil(initialState, 5);
@@ -30,21 +35,24 @@ class GameController extends ValueNotifier<GameState> {
   // --- Core Actions ---
 
   /// Plays a regular card (Feature, Marketing, Utility) from hand.
-  void playCard(GameCard card, int handIndex) {
-    if (value.currentHours < card.timeTaken) {
-      debugPrint("Not enough hours to play ${card.name}");
+  void playCard(CardInPlay cardInPlay, int handIndex) {
+    final cardDefinition = cardInPlay.cardType;
+
+    if (value.currentHours < cardDefinition.timeTaken) {
+      debugPrint("Not enough hours to play ${cardDefinition.name}");
       return; // Cannot afford card
     }
 
-    final newHand = List<GameCard>.from(value.hand);
+    final newHand = List<CardInPlay>.from(value.hand);
     newHand.removeAt(handIndex);
 
-    final newSprintBacklog = List<GameCard>.from(value.sprintBacklog);
-    newSprintBacklog.add(card);
+    final newSprintBacklog = List<CardInPlay>.from(value.sprintBacklog);
+    newSprintBacklog.add(cardInPlay); // Add the CardInPlay instance
 
     // Store the current state before handling OnPlay effects
     final stateBeforeOnPlay = value.copyWith(
-      currentHours: value.currentHours - card.timeTaken,
+      // timeTaken is already an int in BaseCard
+      currentHours: value.currentHours - cardDefinition.timeTaken,
       hand: newHand,
       sprintBacklog: newSprintBacklog,
     );
@@ -53,28 +61,31 @@ class GameController extends ValueNotifier<GameState> {
     value = stateBeforeOnPlay;
 
     // Trigger immediate effects which might further modify the state
-    _handleOnPlay(card);
+    _handleOnPlay(cardInPlay); // Pass the CardInPlay instance
   }
 
   /// Fixes a Bug card from hand.
-  void fixBug(GameCard bugCard, int handIndex) {
-    if (bugCard.type != CardType.bug) {
-      debugPrint("Tried to fix a non-bug card: ${bugCard.name}");
+  void fixBug(CardInPlay bugCardInPlay, int handIndex) {
+    final cardDefinition = bugCardInPlay.cardType;
+
+    if (cardDefinition.type != CardType.bug) {
+      debugPrint("Tried to fix a non-bug card: ${cardDefinition.name}");
       return;
     }
-    if (value.currentHours < bugCard.timeTaken) {
-      debugPrint("Not enough hours to fix ${bugCard.name}");
+    if (value.currentHours < cardDefinition.timeTaken) {
+      debugPrint("Not enough hours to fix ${cardDefinition.name}");
       return; // Cannot afford to fix
     }
 
-    final newHand = List<GameCard>.from(value.hand);
+    final newHand = List<CardInPlay>.from(value.hand);
     newHand.removeAt(handIndex);
 
-    final newRemovedCards = List<GameCard>.from(value.removedCards);
-    newRemovedCards.add(bugCard);
+    final newRemovedCards = List<CardInPlay>.from(value.removedCards);
+    newRemovedCards.add(bugCardInPlay); // Add the CardInPlay instance
 
     value = value.copyWith(
-      currentHours: value.currentHours - bugCard.timeTaken,
+      // timeTaken is already an int in BaseCard
+      currentHours: value.currentHours - cardDefinition.timeTaken,
       hand: newHand,
       removedCards: newRemovedCards,
     );
@@ -94,15 +105,16 @@ class GameController extends ValueNotifier<GameState> {
     value = stateAfterBugCheck;
 
     // 3. Discard played cards (non-bugs) from backlog
-    final List<GameCard> cardsToDiscard = [];
+    final List<CardInPlay> cardsToDiscard = [];
     // Use the most recent state (value) which includes resolved/bug effects
-    final List<GameCard> currentBacklog = List.from(value.sprintBacklog);
-    for (final card in currentBacklog) {
-      if (card.type != CardType.bug) {
-        cardsToDiscard.add(card);
+    final List<CardInPlay> currentBacklog = List.from(value.sprintBacklog);
+    for (final cardInPlay in currentBacklog) {
+      // Access type via cardType
+      if (cardInPlay.cardType.type != CardType.bug) {
+        cardsToDiscard.add(cardInPlay);
       }
     }
-    final newDiscard = List<GameCard>.from(value.discardPile)..addAll(cardsToDiscard);
+    final newDiscard = List<CardInPlay>.from(value.discardPile)..addAll(cardsToDiscard);
 
     // 4. Check milestone (using the final user count after resolve/bugs)
     if (value.users < value.requiredUsers && _isMilestoneSprint(value.sprint)) {
@@ -141,9 +153,9 @@ class GameController extends ValueNotifier<GameState> {
   // Modified draw methods to operate on and return GameState
 
   GameState _drawCard(GameState currentState) {
-    List<GameCard> currentDeck = List.from(currentState.deck);
-    List<GameCard> currentDiscard = List.from(currentState.discardPile);
-    List<GameCard> currentHand = List.from(currentState.hand);
+    List<CardInPlay> currentDeck = List.from(currentState.deck);
+    List<CardInPlay> currentDiscard = List.from(currentState.discardPile);
+    List<CardInPlay> currentHand = List.from(currentState.hand);
 
     if (currentDeck.isEmpty) {
       if (currentDiscard.isEmpty) {
@@ -151,7 +163,7 @@ class GameController extends ValueNotifier<GameState> {
         return currentState; // No cards left anywhere
       }
       debugPrint("Deck empty, shuffling discard pile.");
-      _shuffleDeck(currentDiscard);
+      _shuffleDeck(currentDiscard); // Pass CardInPlay list
       currentDeck = currentDiscard;
       currentDiscard = [];
     }
@@ -173,7 +185,8 @@ class GameController extends ValueNotifier<GameState> {
     return tempState;
   }
 
-  void _shuffleDeck(List<GameCard> deck) {
+  // Update to accept List<CardInPlay>
+  void _shuffleDeck(List<CardInPlay> deck) {
     deck.shuffle(_random);
   }
 
@@ -203,28 +216,30 @@ class GameController extends ValueNotifier<GameState> {
   // _handleOnPlay modifies value directly as it's called after the initial play update.
   // _handleOnResolve and _handleUnplayedBugs return modified state.
 
-  void _handleOnPlay(GameCard card) {
-    debugPrint("Handling OnPlay for: ${card.name} - ${card.onPlay}");
+  // Update to accept CardInPlay
+  void _handleOnPlay(CardInPlay cardInPlay) {
+    final cardDefinition = cardInPlay.cardType;
+    debugPrint("Handling OnPlay for: ${cardDefinition.name} - ${cardDefinition.onPlayText}");
 
+    // Option 1: Use the abstract method directly (requires GameContext)
+    // final gameContext = GameContext(); // TODO: Create actual game context
+    // cardDefinition.onPlay(gameContext);
+    // value = gameContext.currentState; // Assuming context holds and modifies state
+
+    // Option 2: Check type and implement logic here (as before)
     GameState newState = value; // Start with the current state
 
-    // --- Implement OnPlay effects here ---
-
-    // Example: Microtransaction
-    if (card == CardRegistry.microtransaction) {
+    // Use 'is' check for sealed class subtypes
+    if (cardDefinition is MicrotransactionCard) {
       debugPrint("  - Applying Microtransaction: +2 Hours");
       newState = newState.copyWith(currentHours: newState.currentHours + 2);
-    }
-
-    // Example: Push Notification
-    if (card == CardRegistry.pushNotification) {
+    } else if (cardDefinition is PushNotificationCard) {
       debugPrint("  - Applying Push Notification: Draw 1 card");
       newState = _drawCard(newState);
     }
-
-    // TODO: Add other OnPlay effects based on card.onPlay string or a more robust system
-    // e.g., Coffee Refactor: Draw 2, discard 1
-    // e.g., Code Cleanup: Remove 1 Bug, draw 1
+    // TODO: Add other OnPlay effects using 'is' checks or the abstract method approach
+    // else if (cardDefinition is CoffeeRefactorCard) { ... }
+    // else if (cardDefinition is CodeCleanupCard) { ... }
 
     // Update the state if any changes were made by OnPlay effects
     if (newState != value) {
@@ -235,27 +250,24 @@ class GameController extends ValueNotifier<GameState> {
   // Returns the state *after* resolving cards
   GameState _handleOnResolve() {
     debugPrint("Handling OnResolve for ${value.sprintBacklog.length} cards.");
-    // Start with the current state before resolving anything
     GameState stateBeforeResolve = value;
     GameState stateAfterResolve = stateBeforeResolve;
     int totalUsersGained = 0;
 
-    // TODO: Implement actual OnResolve logic
-    // This needs to handle order, adjacency (left/right), multipliers etc.
-    // A simple loop won't suffice for complex interactions.
-    // Consider creating a list of effects/modifiers first, then applying them.
-
     final backlog = stateBeforeResolve.sprintBacklog;
     for (int i = 0; i < backlog.length; i++) {
-      final card = backlog[i];
-      debugPrint("  - Resolving: ${card.name} - ${card.onResolve}");
+      final cardInPlay = backlog[i];
+      final cardDefinition = cardInPlay.cardType;
+      debugPrint("  - Resolving: ${cardDefinition.name} - ${cardDefinition.onResolveText}");
       int usersFromThisCard = 0;
 
-      // --- Basic Placeholder Logic ---
-      if (card == CardRegistry.tweetstorm) {
+      // --- Logic based on card type ---
+      // Use 'is' checks for sealed class subtypes
+      if (cardDefinition is TweetstormCard) {
         int featuresLeft = 0;
         for (int j = 0; j < i; j++) {
-          if (backlog[j].type == CardType.feature) {
+          // Check type of card definition in backlog
+          if (backlog[j].cardType.type == CardType.feature) {
             featuresLeft++;
           }
         }
@@ -263,29 +275,29 @@ class GameController extends ValueNotifier<GameState> {
         debugPrint("    Tweetstorm: Found $featuresLeft features left, +$usersFromThisCard users");
       }
       // Add more specific card checks here...
-      // Example: Product Hunt Post (Placeholder)
-      else if (card == CardRegistry.productHuntPost) {
-        int featureCount = backlog.where((c) => c.type == CardType.feature).length;
-        // Placeholder: Apply 50% bonus per feature to *current* gain (needs refinement)
-        double bonusMultiplier = 1.0 + (featureCount * 0.5);
-        // This is tricky - does it boost gains *before* it, or just its own potential?
-        // Let's assume it boosts overall gain calculated *so far*.
-        // This highlights complexity - effects need proper sequencing.
+      else if (cardDefinition is ProductHuntPostCard) {
+        // Check type of card definition in backlog
+        int featureCount = backlog.where((c) => c.cardType.type == CardType.feature).length;
         debugPrint("    ProductHuntPost: Found $featureCount features. Applying multiplier later (or needs redesign).");
-      } else if (card.type == CardType.marketing && card.onResolve.isNotEmpty) {
-        // Fallback for generic marketing cards for now
-        // usersFromThisCard += 1000; // Example base gain
+        // TODO: Implement multiplier logic correctly
+      } else if (cardDefinition is UnreadPrivacyPolicyCard) {
+        usersFromThisCard = 100; // Gain 100 users
+        debugPrint("    UnreadPrivacyPolicy: +$usersFromThisCard users");
       }
-      // --- End Placeholder ---
+      // Add more OnResolve checks here...
+      // --- End Logic ---
+
       totalUsersGained += usersFromThisCard;
     }
 
     // Apply gain at the end (simple model)
     if (totalUsersGained > 0) {
+      // Apply to the state *before* resolve started
       stateAfterResolve = stateBeforeResolve.copyWith(users: stateBeforeResolve.users + totalUsersGained);
       debugPrint("  Total base users gained from OnResolve: $totalUsersGained");
     }
     // TODO: Apply percentage bonuses like Push Notification (+10%) here, after base gain.
+    // Need to track which cards provide bonuses.
 
     return stateAfterResolve;
   }
@@ -293,42 +305,42 @@ class GameController extends ValueNotifier<GameState> {
   // Returns the state *after* handling unplayed bugs
   GameState _handleUnplayedBugs() {
     debugPrint("Handling unplayed bugs in hand.");
-    // Start with the current state (which might include resolved gains)
-    GameState stateBeforeBugs = value;
+    GameState stateBeforeBugs = value; // Start with potentially resolved state
     GameState stateAfterBugs = stateBeforeBugs;
     int userPenalty = 0;
-    double percentageMultiplier = 1.0; // Start with no percentage change
+    double percentageMultiplier = 1.0;
 
-    // Iterate backwards to safely remove/modify if needed in the future
     for (int i = stateBeforeBugs.hand.length - 1; i >= 0; i--) {
-      final card = stateBeforeBugs.hand[i];
-      if (card.type == CardType.bug) {
-        debugPrint("  - Unplayed Bug: ${card.name} - Triggering penalty: ${card.onResolve}");
+      final cardInPlay = stateBeforeBugs.hand[i];
+      final cardDefinition = cardInPlay.cardType;
+
+      // Check type of card definition
+      if (cardDefinition.type == CardType.bug) {
+        debugPrint("  - Unplayed Bug: ${cardDefinition.name} - Triggering penalty: ${cardDefinition.onResolveText}");
 
         // --- Implement Bug Penalties ---
-        if (card == CardRegistry.crashOnLaunch) {
+        // Use 'is' checks for sealed class subtypes
+        if (cardDefinition is CrashOnLaunchCard) {
           userPenalty += 2500;
           debugPrint("    CrashOnLaunch: +2500 user penalty");
-        }
-        if (card == CardRegistry.buggyCommit) {
-          percentageMultiplier *= 0.90; // Apply 10% reduction
+        } else if (cardDefinition is BuggyCommitCard) {
+          percentageMultiplier *= 0.90;
           debugPrint("    BuggyCommit: Applying 10% user gain reduction multiplier");
         }
         // TODO: Add other bug penalties
       }
     }
 
-    // Apply penalties to the user count *before* bug handling
-    int usersAfterResolve = stateBeforeBugs.users;
-    int usersAfterMultiplier = (usersAfterResolve * percentageMultiplier).floor();
+    // Apply penalties
+    int usersBeforePenalty = stateBeforeBugs.users;
+    int usersAfterMultiplier = (usersBeforePenalty * percentageMultiplier).floor();
     int finalUserCount = max(0, usersAfterMultiplier - userPenalty);
 
-    if (finalUserCount != usersAfterResolve) {
-      debugPrint("  Total User Penalty Applied: ${usersAfterResolve - finalUserCount}. Final users: $finalUserCount");
+    if (finalUserCount != usersBeforePenalty) {
+      debugPrint("  Total User Penalty Applied: ${usersBeforePenalty - finalUserCount}. Final users: $finalUserCount");
       stateAfterBugs = stateBeforeBugs.copyWith(users: finalUserCount);
     }
 
-    // Return the state after applying bug penalties
     return stateAfterBugs;
   }
 }
