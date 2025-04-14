@@ -32,24 +32,9 @@ Manage your hand, your Hours, and the ever-present Bugs to build powerful releas
 
 ---
 
-## 🚀 Getting Started (Standard Flutter)
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
----
-
 ## ✨ Development Process
 
-This game was developed using an AI pair programmer during a live stream. The goal was to create a functional game with minimal direct coding, relying on AI to generate the Flutter code based on prompts and design documents (`docs/*.md`). Every commit triggered a CI/CD release, allowing viewers to test the game live.
+This game was developed using AI pair programming during a live stream. The primary tools used were [Cursor](https://www.cursor.com/), an AI-first code editor, powered by Google's Gemini 2.5 Pro model, along with [Vide](https://vide.dev/) for UI prototyping and iteration. The goal was to create a functional game with minimal direct coding, relying on AI to generate the Flutter code based on prompts and design documents (`docs/*.md`). Every commit triggered a CI/CD release, allowing viewers to test the game live.
 
 ---
 
